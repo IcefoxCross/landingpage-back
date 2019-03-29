@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Subscripcion;
 use DB;
+use Validator;
 
 class SubscripcionController extends Controller
 {
@@ -36,13 +37,23 @@ class SubscripcionController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        /*$request->validate([
+            'nombre' => 'required',
+            'apellido' => 'required',
+            'email' => 'required|unique:subscripcions'
+        ]);*/
+
+        $validator = Validator::make($request->all(),[
             'nombre' => 'required',
             'apellido' => 'required',
             'email' => 'required|unique:subscripcions'
         ]);
 
-        $request->redirect = 'index';
+        if ($validator->fails()){
+            return redirect('/')
+                ->withErrors($validator)
+                ->withInput();
+        }
 
         $sub = new Subscripcion;
         $sub->nombre = $request->input('nombre');
@@ -50,7 +61,7 @@ class SubscripcionController extends Controller
         $sub->email = $request->input('email');
         $sub->save();
 
-        return view('index')->with('success','Gracias por subscribirte! Te acabamos de enviar un mail para confirmar.');
+        return redirect('/')->with('success','Gracias por subscribirte! Te acabamos de enviar un mail para confirmar.');
     }
 
     /**
